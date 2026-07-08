@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ledger — Bet Tracker</title>
+<link rel="icon" href="data:," />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ============== MAIN APP ============== -->
+<div id="app">
+  <header class="topbar">
+    <div class="brand"><span class="dot"></span><span>LEDGER</span></div>
+    <nav class="tabs">
+      <button data-view="dashboard" class="active">Dashboard</button>
+      <button data-view="bets">Bets</button>
+      <button data-view="stats">Stats</button>
+    </nav>
+    <div class="user-menu">
+      <button class="icon-btn" id="export-btn" title="Export backup (.json)">⭳</button>
+      <label class="icon-btn" id="import-btn" title="Import backup (.json)">
+        ⭱
+        <input type="file" accept="application/json" id="import-input" class="hidden" />
+      </label>
+    </div>
+  </header>
+
+  <main>
+    <!-- DASHBOARD -->
+    <section class="view" id="view-dashboard">
+      <div class="hero">
+        <div class="hero-top">
+          <div>
+            <div class="hero-label">Net profit</div>
+            <div class="hero-value flat" id="hero-profit">0,00 kr</div>
+            <div class="hero-sub" id="hero-sub">No bets logged yet.</div>
+          </div>
+        </div>
+        <div class="sparkline-wrap">
+          <svg viewBox="0 0 400 90" preserveAspectRatio="none" id="sparkline-svg">
+            <defs>
+              <linearGradient id="sparklineGradient" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#4c8dff" />
+                <stop offset="100%" stop-color="#2dd4bf" />
+              </linearGradient>
+              <linearGradient id="sparklineFillGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#2dd4bf" stop-opacity="0.22" />
+                <stop offset="100%" stop-color="#2dd4bf" stop-opacity="0" />
+              </linearGradient>
+            </defs>
+            <path class="sparkline-fill" id="sparkline-fill" fill="url(#sparklineFillGradient)" />
+            <path class="sparkline-path" id="sparkline-path" />
+          </svg>
+        </div>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="label">Total staked</div>
+          <div class="value" id="stat-staked">0,00 kr</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Total returned</div>
+          <div class="value" id="stat-returned">0,00 kr</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Win rate</div>
+          <div class="value" id="stat-winrate">0%</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">ROI</div>
+          <div class="value" id="stat-roi">0%</div>
+        </div>
+      </div>
+
+      <div class="section-head">
+        <h2>Recent bets</h2>
+      </div>
+      <div class="card" id="recent-bets-list"></div>
+    </section>
+
+    <!-- BETS -->
+    <section class="view hidden" id="view-bets">
+      <div class="section-head">
+        <h2>All bets</h2>
+        <button class="btn-add" id="add-bet-btn-2">+ Add bet</button>
+      </div>
+      <div class="filters">
+        <select id="filter-league">
+          <option value="">All leagues</option>
+        </select>
+        <select id="filter-status">
+          <option value="">All statuses</option>
+          <option value="won">Won</option>
+          <option value="lost">Lost</option>
+          <option value="pending">Pending</option>
+          <option value="void">Void</option>
+        </select>
+      </div>
+      <div class="card" id="all-bets-list"></div>
+    </section>
+
+    <!-- STATS -->
+    <section class="view hidden" id="view-stats">
+      <div class="section-head">
+        <h2>In-depth stats</h2>
+      </div>
+      <div class="stats-grid">
+        <div class="breakdown-card">
+          <h3>Profit by league</h3>
+          <div id="breakdown-league"></div>
+        </div>
+        <div class="breakdown-card">
+          <h3>By bet type</h3>
+          <div id="breakdown-type"></div>
+        </div>
+        <div class="breakdown-card">
+          <h3>Record</h3>
+          <div id="breakdown-record"></div>
+        </div>
+        <div class="breakdown-card">
+          <h3>Streak</h3>
+          <div id="breakdown-streak"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="tabs-mobile hidden">
+    <button data-view="dashboard" class="active">Dashboard</button>
+    <button data-view="bets">Bets</button>
+    <button data-view="stats">Stats</button>
+  </nav>
+
+  <!-- floating add button (mobile) -->
+  <button class="btn-add" id="add-bet-btn" style="position:fixed; bottom:80px; right:20px; z-index:15; box-shadow: var(--shadow);">+ Add bet</button>
+</div>
+
+<!-- ============== ADD BET SLIDE-OVER ============== -->
+<div class="overlay" id="overlay"></div>
+<div class="slideover" id="slideover">
+  <div class="slideover-head">
+    <h2>Log a bet</h2>
+    <button class="icon-btn" id="close-slideover">✕</button>
+  </div>
+  <form id="bet-form">
+    <div class="field">
+      <label>League / competition</label>
+      <select id="bf-league">
+        <option>Premier League</option>
+        <option>Bundesliga</option>
+        <option>La Liga</option>
+        <option>Serie A</option>
+        <option>Ligue 1</option>
+        <option>Eliteserien</option>
+        <option>Champions League</option>
+        <option>Europa League</option>
+        <option>World Cup</option>
+        <option>Other</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Match / selection</label>
+      <input type="text" id="bf-match" placeholder="e.g. Dortmund vs Bayern — Bayern win" required />
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Bet type</label>
+        <select id="bf-type">
+          <option value="single">Single</option>
+          <option value="parlay">Parlay / accumulator</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Date</label>
+        <input type="date" id="bf-date" required />
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Odds (decimal)</label>
+        <input type="number" id="bf-odds" step="0.01" min="1.01" placeholder="1.85" required />
+      </div>
+      <div class="field">
+        <label>Stake</label>
+        <input type="number" id="bf-stake" step="0.01" min="0" placeholder="100" required />
+      </div>
+    </div>
+    <div class="field">
+      <label>Status</label>
+      <select id="bf-status">
+        <option value="pending">Pending</option>
+        <option value="won">Won</option>
+        <option value="lost">Lost</option>
+        <option value="void">Void / push</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Notes (optional)</label>
+      <input type="text" id="bf-notes" placeholder="Any context worth remembering" />
+    </div>
+
+    <div class="potential-return">
+      <span>Potential return</span>
+      <b id="bf-potential">0,00 kr</b>
+    </div>
+
+    <div class="form-footer">
+      <button type="button" class="btn-secondary" id="cancel-bet">Cancel</button>
+      <button type="submit" class="btn-primary">Save bet</button>
+    </div>
+  </form>
+</div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
