@@ -494,7 +494,7 @@ main {
 /* bet rows */
 .bet-row {
   display: grid;
-  grid-template-columns: 90px 1fr 110px 100px 100px 90px 34px;
+  grid-template-columns: 110px 1fr 100px 90px 100px 90px 34px;
   align-items: center;
   gap: 12px;
   padding: 14px 18px;
