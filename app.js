@@ -43,7 +43,11 @@ function removeBet(id) {
 }
 
 function sortBets() {
-  bets.sort((a, b) => b.date.localeCompare(a.date));
+  bets.sort((a, b) => {
+    const dateCompare = b.date.localeCompare(a.date);
+    if (dateCompare !== 0) return dateCompare;
+    return (b.time || "").localeCompare(a.time || "");
+  });
 }
 
 // ============================================================
@@ -142,9 +146,12 @@ betForm.addEventListener("submit", (e) => {
 
   const betData = {
     league: document.getElementById("bf-league").value,
-    match: document.getElementById("bf-match").value.trim(),
+    homeTeam: document.getElementById("bf-home").value.trim(),
+    awayTeam: document.getElementById("bf-away").value.trim(),
+    selection: document.getElementById("bf-selection").value.trim(),
     type: document.getElementById("bf-type").value,
     date: document.getElementById("bf-date").value,
+    time: document.getElementById("bf-time").value,
     odds,
     stake,
     status,
@@ -162,10 +169,36 @@ betForm.addEventListener("submit", (e) => {
 function renderAll() {
   renderHero();
   renderStatCards();
+  renderTodaysBets();
   renderBetList(document.getElementById("recent-bets-list"), bets.slice(0, 6));
   renderBetList(document.getElementById("all-bets-list"), filteredBets());
   renderLeagueFilter();
+  renderTeamAutocomplete();
   renderStatsBreakdowns();
+}
+
+function renderTodaysBets() {
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const todays = bets
+    .filter((b) => b.date === todayIso)
+    .sort((a, b) => (a.time || "99:99").localeCompare(b.time || "99:99"));
+  renderBetList(
+    document.getElementById("today-bets-list"),
+    todays,
+    "No bets today — enjoy the day off, or click + Add bet if there's a match on."
+  );
+}
+
+function renderTeamAutocomplete() {
+  const teams = new Set();
+  bets.forEach((b) => {
+    if (b.homeTeam) teams.add(b.homeTeam);
+    if (b.awayTeam) teams.add(b.awayTeam);
+  });
+  document.getElementById("team-list").innerHTML = [...teams]
+    .sort()
+    .map((t) => `<option value="${escapeHtml(t)}"></option>`)
+    .join("");
 }
 
 function filteredBets() {
@@ -258,12 +291,12 @@ function renderStatCards() {
   document.getElementById("stat-roi").textContent = (roi >= 0 ? "+" : "") + roi.toFixed(1) + "%";
 }
 
-function renderBetList(container, list) {
+function renderBetList(container, list, emptyMessage) {
   if (list.length === 0) {
     container.innerHTML = `
       <div class="empty-state">
         <div class="big">Nothing here yet</div>
-        <div class="small">Add your first bet to see it tracked here.</div>
+        <div class="small">${emptyMessage || "Add your first bet to see it tracked here."}</div>
       </div>`;
     return;
   }
@@ -274,10 +307,10 @@ function renderBetList(container, list) {
         b.status === "pending" ? "—" : (b.profit >= 0 ? "+" : "") + fmt(b.profit);
       return `
       <div class="bet-row">
-        <div class="date">${formatDate(b.date)}</div>
+        <div class="date">${formatDate(b.date, b.time)}</div>
         <div class="match">
-          <strong>${escapeHtml(b.match)}</strong>
-          <div class="league-tag">${escapeHtml(b.league)} · ${b.type === "parlay" ? "Parlay" : "Single"}</div>
+          <strong>${escapeHtml(b.homeTeam)} vs ${escapeHtml(b.awayTeam)}</strong>
+          <div class="league-tag">${escapeHtml(b.league)} · ${b.type === "parlay" ? "Parlay" : "Single"} · ${escapeHtml(b.selection)}</div>
         </div>
         <div class="odds">@ ${b.odds.toFixed(2)}</div>
         <div class="stake">${fmt(b.stake)}</div>
@@ -360,9 +393,10 @@ function renderBars(container, dataMap) {
   });
 }
 
-function formatDate(iso) {
+function formatDate(iso, time) {
   const d = new Date(iso + "T00:00:00");
-  return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
+  const datePart = d.toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
+  return time ? `${datePart} · ${time}` : datePart;
 }
 
 function escapeHtml(str) {
