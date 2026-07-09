@@ -364,8 +364,42 @@ function renderStatsBreakdowns() {
     else break;
   }
   document.getElementById("breakdown-streak").innerHTML = streak
-    ? `<div class="bar-row"><div class="bar-top"><span>Current streak</span><span class="amt">${streak} ${streakType === "won" ? "win" : "loss"}${streak > 1 ? "es" : ""}</span></div></div>`
+    ? `<div class="bar-row"><div class="bar-top"><span>Current streak</span><span class="amt">${streak} ${streakType === "won" ? (streak > 1 ? "wins" : "win") : (streak > 1 ? "losses" : "loss")}</span></div></div>`
     : `<div class="bar-row"><div class="bar-top"><span>No settled bets yet</span></div></div>`;
+
+  renderAllTimeStats();
+}
+
+function renderAllTimeStats() {
+  const container = document.getElementById("breakdown-alltime");
+  const wins = bets.filter((b) => b.status === "won");
+  if (wins.length === 0) {
+    container.innerHTML = `<div class="bar-row"><div class="bar-top"><span>No wins logged yet</span></div></div>`;
+    return;
+  }
+  const biggestByMoney = wins.reduce((a, b) => (b.profit > a.profit ? b : a));
+  const biggestByOdds = wins.reduce((a, b) => (b.odds > a.odds ? b : a));
+
+  container.innerHTML = `
+    <div class="bar-row">
+      <div class="bar-top">
+        <span>Biggest win (money)</span>
+        <span class="amt">+${fmt(biggestByMoney.profit)}</span>
+      </div>
+      <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">
+        ${escapeHtml(biggestByMoney.homeTeam)} vs ${escapeHtml(biggestByMoney.awayTeam)} · @ ${biggestByMoney.odds.toFixed(2)}
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-top">
+        <span>Biggest win (odds)</span>
+        <span class="amt">@ ${biggestByOdds.odds.toFixed(2)}</span>
+      </div>
+      <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">
+        ${escapeHtml(biggestByOdds.homeTeam)} vs ${escapeHtml(biggestByOdds.awayTeam)} · +${fmt(biggestByOdds.profit)}
+      </div>
+    </div>
+  `;
 }
 
 function groupSum(list, key) {
