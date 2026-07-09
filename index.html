@@ -58,6 +58,11 @@
         </div>
       </div>
 
+      <div class="section-head">
+        <h2>Today's bets</h2>
+      </div>
+      <div class="card" id="today-bets-list" style="margin-bottom: 24px;"></div>
+
       <div class="stat-grid">
         <div class="stat-card">
           <div class="label">Total staked</div>
@@ -163,21 +168,36 @@
         <option>Other</option>
       </select>
     </div>
+    <div class="row2">
+      <div class="field">
+        <label>Home team</label>
+        <input type="text" id="bf-home" list="team-list" placeholder="e.g. Dortmund" required />
+      </div>
+      <div class="field">
+        <label>Away team</label>
+        <input type="text" id="bf-away" list="team-list" placeholder="e.g. Bayern" required />
+      </div>
+    </div>
+    <datalist id="team-list"></datalist>
     <div class="field">
-      <label>Match / selection</label>
-      <input type="text" id="bf-match" placeholder="e.g. Dortmund vs Bayern — Bayern win" required />
+      <label>Selection / bet detail</label>
+      <input type="text" id="bf-selection" placeholder="e.g. Bayern to win, Over 2.5 goals" required />
+    </div>
+    <div class="field">
+      <label>Bet type</label>
+      <select id="bf-type">
+        <option value="single">Single</option>
+        <option value="parlay">Parlay / accumulator</option>
+      </select>
     </div>
     <div class="row2">
       <div class="field">
-        <label>Bet type</label>
-        <select id="bf-type">
-          <option value="single">Single</option>
-          <option value="parlay">Parlay / accumulator</option>
-        </select>
-      </div>
-      <div class="field">
         <label>Date</label>
         <input type="date" id="bf-date" required />
+      </div>
+      <div class="field">
+        <label>Kickoff time</label>
+        <input type="time" id="bf-time" />
       </div>
     </div>
     <div class="row2">
