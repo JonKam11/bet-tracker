@@ -11,6 +11,7 @@
 </head>
 <body>
 
+<!-- ============== MAIN APP ============== -->
 <div id="app">
   <header class="topbar">
     <div class="brand"><span class="dot"></span><span>LEDGER</span></div>
@@ -19,36 +20,12 @@
       <button data-view="bets">Bets</button>
       <button data-view="stats">Stats</button>
     </nav>
-    <div class="user-menu" style="position:relative;">
-      <button class="icon-btn" id="profile-btn" title="Profile & settings">👤</button>
-      <div class="profile-panel hidden" id="profile-panel">
-        <div class="field">
-          <label>Display name</label>
-          <input type="text" id="set-name" placeholder="Your name" />
-        </div>
-        <div class="field">
-          <label>Currency</label>
-          <select id="set-currency">
-            <option value="NOK">NOK — Norwegian krone</option>
-            <option value="EUR">EUR — Euro</option>
-            <option value="USD">USD — US dollar</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>Theme</label>
-          <div class="theme-toggle">
-            <button type="button" class="theme-opt active" data-theme="dark">Dark</button>
-            <button type="button" class="theme-opt" data-theme="light">Light</button>
-          </div>
-        </div>
-        <div class="profile-actions">
-          <button type="button" class="btn-secondary" id="export-btn">⭳ Export data</button>
-          <label class="btn-secondary import-label" id="import-btn">
-            ⭱ Import data
-            <input type="file" accept="application/json" id="import-input" class="hidden" />
-          </label>
-        </div>
-      </div>
+    <div class="user-menu">
+      <button class="icon-btn" id="export-btn" title="Export backup (.json)">⭳</button>
+      <label class="icon-btn" id="import-btn" title="Import backup (.json)">
+        ⭱
+        <input type="file" accept="application/json" id="import-input" class="hidden" />
+      </label>
     </div>
   </header>
 
@@ -83,8 +60,12 @@
 
       <div class="stat-grid">
         <div class="stat-card">
-          <div class="label">This month</div>
-          <div class="value" id="stat-month">0,00 kr</div>
+          <div class="label">Total staked</div>
+          <div class="value" id="stat-staked">0,00 kr</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Total returned</div>
+          <div class="value" id="stat-returned">0,00 kr</div>
         </div>
         <div class="stat-card">
           <div class="label">Win rate</div>
@@ -94,96 +75,33 @@
           <div class="label">ROI</div>
           <div class="value" id="stat-roi">0%</div>
         </div>
-        <div class="stat-card">
-          <div class="label">Total staked</div>
-          <div class="value" id="stat-staked">0,00 kr</div>
-        </div>
-        <div class="stat-card">
-          <div class="label">Total returned</div>
-          <div class="value" id="stat-returned">0,00 kr</div>
-        </div>
       </div>
 
       <div class="section-head">
-        <h2>Monthly profit</h2>
+        <h2>Recent bets</h2>
       </div>
-      <div class="card chart-card">
-        <div class="monthly-chart" id="monthly-chart"></div>
-      </div>
-
-      <div class="stat-grid insight-grid">
-        <div class="stat-card">
-          <div class="label">🔥 Current streak</div>
-          <div class="value" id="stat-streak">—</div>
-        </div>
-        <div class="stat-card">
-          <div class="label">🏆 Best league</div>
-          <div class="value" id="stat-bestleague">—</div>
-        </div>
-        <div class="stat-card">
-          <div class="label">💸 Biggest win</div>
-          <div class="value" id="stat-biggestwin">—</div>
-        </div>
-        <div class="stat-card">
-          <div class="label">📈 Avg odds</div>
-          <div class="value" id="stat-avgodds">—</div>
-        </div>
-      </div>
+      <div class="card" id="recent-bets-list"></div>
     </section>
 
     <!-- BETS -->
     <section class="view hidden" id="view-bets">
       <div class="section-head">
-        <h2>Bets</h2>
+        <h2>All bets</h2>
         <button class="btn-add" id="add-bet-btn-2">+ Add bet</button>
       </div>
-
-      <div class="subtabs">
-        <button data-subview="list" class="active">List</button>
-        <button data-subview="calendar">Calendar</button>
+      <div class="filters">
+        <select id="filter-league">
+          <option value="">All leagues</option>
+        </select>
+        <select id="filter-status">
+          <option value="">All statuses</option>
+          <option value="won">Won</option>
+          <option value="lost">Lost</option>
+          <option value="pending">Pending</option>
+          <option value="void">Void</option>
+        </select>
       </div>
-
-      <!-- LIST -->
-      <div id="subview-list">
-        <div class="filters">
-          <input type="text" id="search-input" placeholder="Search team, league, notes..." class="search-input" />
-          <select id="sort-select">
-            <option value="newest">Newest</option>
-            <option value="oldest">Oldest</option>
-            <option value="profit-high">Highest profit</option>
-            <option value="profit-low">Biggest loss</option>
-            <option value="odds-high">Highest odds</option>
-            <option value="stake-high">Highest stake</option>
-          </select>
-        </div>
-        <div class="filters">
-          <select id="filter-league">
-            <option value="">All leagues</option>
-          </select>
-          <select id="filter-status">
-            <option value="">All results</option>
-            <option value="won">Won</option>
-            <option value="lost">Lost</option>
-          </select>
-        </div>
-        <div class="card" id="all-bets-list"></div>
-      </div>
-
-      <!-- CALENDAR -->
-      <div id="subview-calendar" class="hidden">
-        <div class="card calendar-card">
-          <div class="calendar-head">
-            <button type="button" class="icon-btn" id="cal-prev">‹</button>
-            <span id="cal-label">July 2026</span>
-            <button type="button" class="icon-btn" id="cal-next">›</button>
-          </div>
-          <div class="calendar-weekdays">
-            <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
-          </div>
-          <div class="calendar-grid" id="calendar-grid"></div>
-        </div>
-        <div class="card day-detail hidden" id="day-detail"></div>
-      </div>
+      <div class="card" id="all-bets-list"></div>
     </section>
 
     <!-- STATS -->
@@ -221,11 +139,11 @@
   <button class="btn-add" id="add-bet-btn" style="position:fixed; bottom:80px; right:20px; z-index:15; box-shadow: var(--shadow);">+ Add bet</button>
 </div>
 
-<!-- ADD/EDIT BET SLIDE-OVER -->
+<!-- ============== ADD BET SLIDE-OVER ============== -->
 <div class="overlay" id="overlay"></div>
 <div class="slideover" id="slideover">
   <div class="slideover-head">
-    <h2 id="slideover-title">Log a bet</h2>
+    <h2>Log a bet</h2>
     <button class="icon-btn" id="close-slideover">✕</button>
   </div>
   <form id="bet-form">
@@ -244,36 +162,21 @@
         <option>Other</option>
       </select>
     </div>
+    <div class="field">
+      <label>Match / selection</label>
+      <input type="text" id="bf-match" placeholder="e.g. Dortmund vs Bayern — Bayern win" required />
+    </div>
     <div class="row2">
       <div class="field">
-        <label>Home team</label>
-        <input type="text" id="bf-home" list="team-list" placeholder="e.g. Dortmund" required />
+        <label>Bet type</label>
+        <select id="bf-type">
+          <option value="single">Single</option>
+          <option value="parlay">Parlay / accumulator</option>
+        </select>
       </div>
-      <div class="field">
-        <label>Away team</label>
-        <input type="text" id="bf-away" list="team-list" placeholder="e.g. Bayern" required />
-      </div>
-    </div>
-    <datalist id="team-list"></datalist>
-    <div class="field">
-      <label>Selection / bet detail</label>
-      <input type="text" id="bf-selection" placeholder="e.g. Bayern to win, Over 2.5 goals" required />
-    </div>
-    <div class="field">
-      <label>Bet type</label>
-      <select id="bf-type">
-        <option value="single">Single</option>
-        <option value="parlay">Parlay / accumulator</option>
-      </select>
-    </div>
-    <div class="row2">
       <div class="field">
         <label>Date</label>
         <input type="date" id="bf-date" required />
-      </div>
-      <div class="field">
-        <label>Kickoff time</label>
-        <input type="time" id="bf-time" />
       </div>
     </div>
     <div class="row2">
@@ -287,12 +190,13 @@
       </div>
     </div>
     <div class="field">
-      <label>Result</label>
-      <div class="segmented">
-        <button type="button" class="seg-opt won active" data-status="won">Won</button>
-        <button type="button" class="seg-opt lost" data-status="lost">Lost</button>
-      </div>
-      <input type="hidden" id="bf-status" value="won" />
+      <label>Status</label>
+      <select id="bf-status">
+        <option value="pending">Pending</option>
+        <option value="won">Won</option>
+        <option value="lost">Lost</option>
+        <option value="void">Void / push</option>
+      </select>
     </div>
     <div class="field">
       <label>Notes (optional)</label>
@@ -300,13 +204,13 @@
     </div>
 
     <div class="potential-return">
-      <span>If this bet wins</span>
+      <span>Potential return</span>
       <b id="bf-potential">0,00 kr</b>
     </div>
 
     <div class="form-footer">
       <button type="button" class="btn-secondary" id="cancel-bet">Cancel</button>
-      <button type="submit" class="btn-primary" id="submit-bet-btn">Save bet</button>
+      <button type="submit" class="btn-primary">Save bet</button>
     </div>
   </form>
 </div>
