@@ -20,12 +20,32 @@
       <button data-view="bets">Bets</button>
       <button data-view="stats">Stats</button>
     </nav>
-    <div class="user-menu">
-      <button class="icon-btn" id="export-btn" title="Export backup (.json)">⭳</button>
-      <label class="icon-btn" id="import-btn" title="Import backup (.json)">
-        ⭱
-        <input type="file" accept="application/json" id="import-input" class="hidden" />
-      </label>
+    <div class="user-menu" style="position:relative;">
+      <button class="icon-btn" id="settings-btn" title="Settings">⚙️</button>
+      <div class="settings-panel hidden" id="settings-panel">
+        <div class="field">
+          <label>Currency</label>
+          <select id="set-currency">
+            <option value="NOK">NOK — Norwegian krone</option>
+            <option value="EUR">EUR — Euro</option>
+            <option value="USD">USD — US dollar</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Theme</label>
+          <div class="theme-toggle">
+            <button type="button" class="theme-opt active" data-theme="dark">Dark</button>
+            <button type="button" class="theme-opt" data-theme="light">Light</button>
+          </div>
+        </div>
+        <div class="settings-actions">
+          <button type="button" class="btn-secondary" id="export-btn">⭳ Export data</button>
+          <label class="btn-secondary import-label" id="import-btn">
+            ⭱ Import data
+            <input type="file" accept="application/json" id="import-input" class="hidden" />
+          </label>
+        </div>
+      </div>
     </div>
   </header>
 
