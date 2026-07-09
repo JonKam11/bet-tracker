@@ -808,3 +808,366 @@ main {
   .bet-row .status-pill { grid-area: status; justify-self: start; }
   .row-del { display: none; }
 }
+
+/* ============================================
+   V2 ADDITIONS
+   ============================================ */
+
+/* profile dropdown */
+.profile-panel {
+  position: absolute;
+  top: 44px;
+  right: 0;
+  width: 260px;
+  background: var(--surface);
+  border: 1px solid var(--border-hi);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  box-shadow: var(--shadow);
+  z-index: 40;
+  animation: dropdown 0.2s var(--ease);
+}
+
+@keyframes dropdown {
+  from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.theme-toggle, .segmented {
+  display: flex;
+  gap: 6px;
+  background: var(--surface-hi);
+  padding: 4px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+}
+
+.theme-opt, .seg-opt {
+  flex: 1;
+  padding: 7px 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  border-radius: 999px;
+  transition: all 0.2s var(--ease);
+}
+
+.theme-opt.active { background: var(--surface); color: var(--text); }
+.seg-opt.won.active { background: var(--win-dim); color: var(--win); }
+.seg-opt.lost.active { background: var(--loss-dim); color: var(--loss); }
+
+.profile-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.import-label {
+  display: block;
+  text-align: center;
+  cursor: pointer;
+}
+
+/* subtabs (Bets: List / Calendar) */
+.subtabs {
+  display: inline-flex;
+  gap: 4px;
+  background: var(--surface);
+  padding: 4px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+
+.subtabs button {
+  padding: 7px 18px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text-muted);
+  border-radius: 999px;
+  transition: all 0.2s var(--ease);
+}
+
+.subtabs button.active {
+  background: var(--surface-hi);
+  color: var(--teal);
+}
+
+/* search input */
+.search-input {
+  flex: 1;
+  min-width: 180px;
+}
+
+/* insight grid slightly tighter */
+.insight-grid {
+  margin-top: 14px;
+  margin-bottom: 24px;
+}
+
+/* row actions (edit / delete) */
+.row-actions {
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+.row-edit {
+  color: var(--text-faint);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  transition: all 0.15s var(--ease);
+}
+
+.row-edit:hover {
+  color: var(--teal);
+  background: var(--teal-dim);
+}
+
+/* adjust bet row grid to fit action column */
+.bet-row {
+  grid-template-columns: 110px 1fr 100px 90px 100px 90px 66px;
+}
+
+/* ============================================
+   CALENDAR
+   ============================================ */
+.calendar-card {
+  padding: 20px 22px;
+  margin-bottom: 16px;
+  animation: rise 0.4s var(--ease);
+}
+
+.calendar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.calendar-head span {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.calendar-weekdays span {
+  text-align: center;
+  font-size: 11.5px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  min-height: 62px;
+  background: var(--surface-hi);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 6px 4px;
+  transition: all 0.15s var(--ease);
+  position: relative;
+}
+
+.calendar-day.empty {
+  background: transparent;
+  pointer-events: none;
+}
+
+.calendar-day.has-bets {
+  cursor: pointer;
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+.calendar-day.has-bets:hover {
+  border-color: var(--border-hi);
+  transform: translateY(-1px);
+}
+
+.calendar-day.selected {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 1px var(--teal);
+}
+
+.cal-daynum {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.calendar-day.has-bets .cal-daynum {
+  color: var(--text);
+}
+
+.cal-dots {
+  display: flex;
+  gap: 3px;
+}
+
+.cal-dots .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.cal-dots .dot.win { background: var(--win); }
+.cal-dots .dot.loss { background: var(--loss); }
+
+.cal-profit {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.cal-profit.pos { color: var(--win); }
+.cal-profit.neg { color: var(--loss); }
+
+.cal-count {
+  position: absolute;
+  top: 3px;
+  right: 4px;
+  font-size: 9px;
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+}
+
+/* day detail panel */
+.day-detail {
+  padding: 18px 20px;
+  animation: rise 0.3s var(--ease);
+}
+
+.day-detail h3 {
+  font-size: 15px;
+  font-family: var(--font-display);
+}
+
+.day-detail .bet-row {
+  padding: 10px 4px;
+  gap: 10px;
+}
+
+/* ============================================
+   MONTHLY BAR CHART
+   ============================================ */
+.chart-card {
+  padding: 22px 24px 14px;
+  margin-bottom: 20px;
+}
+
+.monthly-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  height: 180px;
+}
+
+.month-bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.month-bar-track {
+  width: 100%;
+  max-width: 42px;
+  height: 130px;
+  display: flex;
+  align-items: flex-end;
+  background: var(--surface-hi);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.month-bar-fill {
+  width: 100%;
+  height: 0%;
+  background: linear-gradient(180deg, var(--teal), var(--blue));
+  border-radius: 6px 6px 0 0;
+  transition: height 1s var(--ease);
+}
+
+.month-bar-fill.neg {
+  background: linear-gradient(180deg, var(--loss), #a83e3e);
+}
+
+.month-bar-label {
+  margin-top: 8px;
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+.month-bar-value {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.month-bar-value.pos { color: var(--win); }
+.month-bar-value.neg { color: var(--loss); }
+
+/* ============================================
+   LIGHT THEME
+   ============================================ */
+[data-theme="light"] {
+  --bg: #eef2f6;
+  --surface: #ffffff;
+  --surface-hi: #f3f6f9;
+  --border: rgba(10, 20, 32, 0.08);
+  --border-hi: rgba(10, 20, 32, 0.16);
+  --text: #0f1c2a;
+  --text-muted: #5b6b7a;
+  --text-faint: #9aa8b5;
+}
+
+[data-theme="light"] body {
+  background: radial-gradient(ellipse 120% 80% at 50% -10%, #ffffff 0%, var(--bg) 55%);
+}
+
+[data-theme="light"] .btn-primary,
+[data-theme="light"] .month-bar-fill {
+  color: #ffffff;
+}
+
+/* responsive tweaks for new bits */
+@media (max-width: 760px) {
+  .bet-row {
+    grid-template-columns: 1fr auto;
+  }
+  .row-actions { display: none; }
+  .calendar-day { min-height: 46px; }
+  .cal-profit { display: none; }
+  .monthly-chart { height: 140px; }
+  .month-bar-track { height: 90px; }
+  .profile-panel { width: 220px; right: -10px; }
+}
