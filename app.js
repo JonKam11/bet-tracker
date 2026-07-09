@@ -6,12 +6,62 @@
 // ============================================================
 
 const STORAGE_KEY = "ledger_bets_v1";
+const SETTINGS_KEY = "ledger_settings_v1";
 
-// ---------------- currency formatting ----------------
-const CURRENCY = "NOK"; // change to "USD", "EUR" etc. if you like
-const fmt = (n) =>
-  new Intl.NumberFormat("nb-NO", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n) +
-  (CURRENCY === "NOK" ? " kr" : " " + CURRENCY);
+// ---------------- settings (currency + theme) ----------------
+let settings = loadSettings();
+
+function loadSettings() {
+  try {
+    return { currency: "NOK", theme: "dark", ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}") };
+  } catch {
+    return { currency: "NOK", theme: "dark" };
+  }
+}
+function saveSettings() {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+}
+function applySettings() {
+  document.documentElement.setAttribute("data-theme", settings.theme);
+  document.getElementById("set-currency").value = settings.currency;
+  document.querySelectorAll(".theme-opt").forEach((btn) =>
+    btn.classList.toggle("active", btn.dataset.theme === settings.theme)
+  );
+}
+
+function fmt(n) {
+  if (settings.currency === "EUR") {
+    return new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(n);
+  }
+  if (settings.currency === "USD") {
+    return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n);
+  }
+  return new Intl.NumberFormat("nb-NO", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n) + " kr";
+}
+
+// settings panel toggle + interactions
+document.getElementById("settings-btn").addEventListener("click", (e) => {
+  e.stopPropagation();
+  document.getElementById("settings-panel").classList.toggle("hidden");
+});
+document.addEventListener("click", (e) => {
+  const panel = document.getElementById("settings-panel");
+  if (!panel.classList.contains("hidden") && !panel.contains(e.target) && e.target.id !== "settings-btn") {
+    panel.classList.add("hidden");
+  }
+});
+document.getElementById("set-currency").addEventListener("change", (e) => {
+  settings.currency = e.target.value;
+  saveSettings();
+  renderAll();
+});
+document.querySelectorAll(".theme-opt").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    settings.theme = btn.dataset.theme;
+    saveSettings();
+    applySettings();
+  });
+});
 
 // ---------------- state ----------------
 let bets = load();
@@ -374,5 +424,6 @@ function escapeHtml(str) {
 // ============================================================
 // INIT
 // ============================================================
+applySettings();
 sortBets();
 renderAll();
