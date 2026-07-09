@@ -117,8 +117,6 @@
           <option value="">All statuses</option>
           <option value="won">Won</option>
           <option value="lost">Lost</option>
-          <option value="pending">Pending</option>
-          <option value="void">Void</option>
         </select>
       </div>
       <div class="card" id="all-bets-list"></div>
@@ -182,9 +180,15 @@
         <option>Other</option>
       </select>
     </div>
-    <div class="field">
-      <label>Match / selection</label>
-      <input type="text" id="bf-match" placeholder="e.g. Dortmund vs Bayern — Bayern win" required />
+    <div class="row2">
+      <div class="field">
+        <label>Home team</label>
+        <input type="text" id="bf-home" placeholder="e.g. Dortmund" required />
+      </div>
+      <div class="field">
+        <label>Away team</label>
+        <input type="text" id="bf-away" placeholder="e.g. Bayern" required />
+      </div>
     </div>
     <div class="row2">
       <div class="field">
@@ -212,10 +216,8 @@
     <div class="field">
       <label>Status</label>
       <select id="bf-status">
-        <option value="pending">Pending</option>
         <option value="won">Won</option>
         <option value="lost">Lost</option>
-        <option value="void">Void / push</option>
       </select>
     </div>
     <div class="field">
