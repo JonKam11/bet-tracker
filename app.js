@@ -183,16 +183,14 @@ betForm.addEventListener("submit", (e) => {
   e.preventDefault();
   const odds = parseFloat(document.getElementById("bf-odds").value);
   const stake = parseFloat(document.getElementById("bf-stake").value);
-  const status = document.getElementById("bf-status").value;
+  const status = document.getElementById("bf-status").value; // won | lost
 
-  let profit = 0;
-  if (status === "won") profit = stake * odds - stake;
-  else if (status === "lost") profit = -stake;
-  else profit = 0; // pending / void
+  const profit = status === "won" ? stake * odds - stake : -stake;
 
   const betData = {
     league: document.getElementById("bf-league").value,
-    match: document.getElementById("bf-match").value.trim(),
+    homeTeam: document.getElementById("bf-home").value.trim(),
+    awayTeam: document.getElementById("bf-away").value.trim(),
     type: document.getElementById("bf-type").value,
     date: document.getElementById("bf-date").value,
     odds,
@@ -320,13 +318,12 @@ function renderBetList(container, list) {
   container.innerHTML = list
     .map((b) => {
       const profitClass = b.profit > 0 ? "pos" : b.profit < 0 ? "neg" : "flat";
-      const profitText =
-        b.status === "pending" ? "—" : (b.profit >= 0 ? "+" : "") + fmt(b.profit);
+      const profitText = (b.profit >= 0 ? "+" : "") + fmt(b.profit);
       return `
       <div class="bet-row">
         <div class="date">${formatDate(b.date)}</div>
         <div class="match">
-          <strong>${escapeHtml(b.match)}</strong>
+          <strong>${escapeHtml(b.homeTeam)} vs ${escapeHtml(b.awayTeam)}</strong>
           <div class="league-tag">${escapeHtml(b.league)} · ${b.type === "parlay" ? "Parlay" : "Single"}</div>
         </div>
         <div class="odds">@ ${b.odds.toFixed(2)}</div>
@@ -353,11 +350,9 @@ function renderStatsBreakdowns() {
   const settled = bets.filter((b) => b.status === "won" || b.status === "lost");
   const wins = settled.filter((b) => b.status === "won").length;
   const losses = settled.filter((b) => b.status === "lost").length;
-  const pending = bets.filter((b) => b.status === "pending").length;
   document.getElementById("breakdown-record").innerHTML = `
     <div class="bar-row"><div class="bar-top"><span>Won</span><span class="amt">${wins}</span></div></div>
     <div class="bar-row"><div class="bar-top"><span>Lost</span><span class="amt">${losses}</span></div></div>
-    <div class="bar-row"><div class="bar-top"><span>Pending</span><span class="amt">${pending}</span></div></div>
   `;
 
   const chrono = [...settled].sort((a, b) => a.date.localeCompare(b.date));
