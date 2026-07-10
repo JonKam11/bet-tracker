@@ -929,3 +929,212 @@ main {
 @media (max-width: 760px) {
   .row-actions { display: none; }
 }
+
+/* ============================================
+   CALENDAR VIEW
+   ============================================ */
+.subtabs {
+  display: inline-flex;
+  gap: 4px;
+  background: var(--surface);
+  padding: 4px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+
+.subtabs button {
+  padding: 7px 18px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text-muted);
+  border-radius: 999px;
+  transition: all 0.2s var(--ease);
+}
+
+.subtabs button.active {
+  background: var(--surface-hi);
+  color: var(--teal);
+}
+
+.calendar-summary {
+  display: flex;
+  gap: 28px;
+  padding: 16px 22px;
+  margin-bottom: 16px;
+  animation: rise 0.3s var(--ease);
+}
+
+.calendar-summary .summary-item .label {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.calendar-summary .summary-item .value {
+  font-family: var(--font-mono);
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.calendar-card {
+  padding: 20px 22px;
+  margin-bottom: 16px;
+  animation: rise 0.4s var(--ease);
+}
+
+.calendar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.calendar-head span {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.calendar-weekdays span {
+  text-align: center;
+  font-size: 11.5px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  min-height: 70px;
+  background: var(--surface-hi);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 6px 4px;
+  transition: all 0.15s var(--ease);
+  position: relative;
+}
+
+.calendar-day.empty {
+  background: transparent;
+  pointer-events: none;
+}
+
+.calendar-day.has-bets {
+  cursor: pointer;
+}
+
+.calendar-day.profit-day {
+  background: var(--win-dim);
+  border-color: rgba(61, 220, 132, 0.25);
+}
+
+.calendar-day.loss-day {
+  background: var(--loss-dim);
+  border-color: rgba(255, 107, 107, 0.25);
+}
+
+.calendar-day.has-bets:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-hi);
+}
+
+.calendar-day.selected {
+  box-shadow: 0 0 0 2px var(--teal);
+}
+
+.cal-daynum {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.calendar-day.has-bets .cal-daynum {
+  color: var(--text);
+}
+
+.cal-count {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.cal-profit {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.cal-profit.pos { color: var(--win); }
+.cal-profit.neg { color: var(--loss); }
+
+/* day detail panel */
+.day-detail {
+  padding: 18px 20px;
+  animation: rise 0.3s var(--ease);
+}
+
+.day-detail h3 {
+  font-size: 15px;
+  font-family: var(--font-display);
+  margin-bottom: 14px;
+}
+
+.day-detail-bet {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.day-detail-bet:last-child { border-bottom: none; }
+
+.day-detail-bet .ddb-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.day-detail-bet .ddb-top strong {
+  font-size: 14px;
+}
+
+.day-detail-bet .ddb-meta {
+  display: flex;
+  gap: 20px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.day-detail-bet .ddb-meta b {
+  color: var(--text);
+  font-family: var(--font-mono);
+  display: block;
+  font-size: 13px;
+  margin-top: 1px;
+}
+
+@media (max-width: 760px) {
+  .calendar-day { min-height: 52px; }
+  .cal-count { display: none; }
+  .calendar-summary { flex-wrap: wrap; gap: 16px; }
+  .day-detail-bet .ddb-meta { gap: 14px; }
+}
