@@ -106,9 +106,15 @@
     <!-- BETS -->
     <section class="view hidden" id="view-bets">
       <div class="section-head">
-        <h2>All bets</h2>
+        <h2>Bets</h2>
         <button class="btn-add" id="add-bet-btn-2">+ Add bet</button>
       </div>
+
+      <div class="subtabs">
+        <button data-subview="list" class="active">List</button>
+        <button data-subview="calendar">Calendar</button>
+      </div>
+
       <div class="filters">
         <input type="text" id="search-input" placeholder="🔍 Search team, league, notes..." class="search-input" />
         <select id="sort-select">
@@ -130,7 +136,28 @@
           <option value="lost">Lost</option>
         </select>
       </div>
-      <div class="card" id="all-bets-list"></div>
+
+      <!-- LIST -->
+      <div id="subview-list">
+        <div class="card" id="all-bets-list"></div>
+      </div>
+
+      <!-- CALENDAR -->
+      <div id="subview-calendar" class="hidden">
+        <div class="card calendar-summary" id="calendar-summary"></div>
+        <div class="card calendar-card">
+          <div class="calendar-head">
+            <button type="button" class="icon-btn" id="cal-prev">‹</button>
+            <span id="cal-label">July 2026</span>
+            <button type="button" class="icon-btn" id="cal-next">›</button>
+          </div>
+          <div class="calendar-weekdays">
+            <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+          </div>
+          <div class="calendar-grid" id="calendar-grid"></div>
+        </div>
+        <div class="card day-detail hidden" id="day-detail"></div>
+      </div>
     </section>
 
     <!-- STATS -->
