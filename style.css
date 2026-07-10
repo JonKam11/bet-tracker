@@ -889,3 +889,43 @@ main {
 @media (max-width: 760px) {
   .settings-panel { width: 220px; right: -10px; }
 }
+
+/* ============================================
+   SEARCH / SORT / EDIT
+   ============================================ */
+.search-input {
+  flex: 1;
+  min-width: 180px;
+}
+
+.row-actions {
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+.row-edit {
+  color: var(--text-faint);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  transition: all 0.15s var(--ease);
+}
+
+.row-edit:hover {
+  color: var(--teal);
+  background: var(--teal-dim);
+}
+
+/* widen the action column to fit both buttons */
+.bet-row {
+  grid-template-columns: 90px 1fr 110px 100px 100px 90px 66px;
+}
+
+@media (max-width: 760px) {
+  .row-actions { display: none; }
+}
