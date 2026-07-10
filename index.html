@@ -110,6 +110,17 @@
         <button class="btn-add" id="add-bet-btn-2">+ Add bet</button>
       </div>
       <div class="filters">
+        <input type="text" id="search-input" placeholder="🔍 Search team, league, notes..." class="search-input" />
+        <select id="sort-select">
+          <option value="newest">Newest</option>
+          <option value="oldest">Oldest</option>
+          <option value="profit-high">Highest profit</option>
+          <option value="profit-low">Biggest loss</option>
+          <option value="odds-high">Highest odds</option>
+          <option value="stake-high">Highest stake</option>
+        </select>
+      </div>
+      <div class="filters">
         <select id="filter-league">
           <option value="">All leagues</option>
         </select>
@@ -165,7 +176,7 @@
 <div class="overlay" id="overlay"></div>
 <div class="slideover" id="slideover">
   <div class="slideover-head">
-    <h2>Log a bet</h2>
+    <h2 id="slideover-title">Log a bet</h2>
     <button class="icon-btn" id="close-slideover">✕</button>
   </div>
   <form id="bet-form">
@@ -236,7 +247,7 @@
 
     <div class="form-footer">
       <button type="button" class="btn-secondary" id="cancel-bet">Cancel</button>
-      <button type="submit" class="btn-primary">Save bet</button>
+      <button type="submit" class="btn-primary" id="submit-bet-btn">Save bet</button>
     </div>
   </form>
 </div>
