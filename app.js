@@ -152,6 +152,30 @@ document.querySelectorAll("nav.tabs button, nav.tabs-mobile button").forEach((bt
   btn.addEventListener("click", () => switchView(btn.dataset.view));
 });
 
+// Bets sub-tabs: List / Calendar
+let calendarDate = new Date();
+let selectedCalendarDay = null;
+
+document.querySelectorAll(".subtabs button").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".subtabs button").forEach((b) => b.classList.remove("active"));
+    btn.classList.add("active");
+    const sub = btn.dataset.subview;
+    document.getElementById("subview-list").classList.toggle("hidden", sub !== "list");
+    document.getElementById("subview-calendar").classList.toggle("hidden", sub !== "calendar");
+    if (sub === "calendar") renderCalendarView();
+  });
+});
+
+document.getElementById("cal-prev").addEventListener("click", () => {
+  calendarDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth() - 1, 1);
+  renderCalendarView();
+});
+document.getElementById("cal-next").addEventListener("click", () => {
+  calendarDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 1);
+  renderCalendarView();
+});
+
 // ============================================================
 // SLIDE-OVER FORM
 // ============================================================
@@ -287,6 +311,9 @@ function filteredSortedBets() {
 
 function refreshListView() {
   renderBetList(document.getElementById("all-bets-list"), filteredSortedBets());
+  if (!document.getElementById("subview-calendar").classList.contains("hidden")) {
+    renderCalendarView();
+  }
 }
 ["filter-league", "filter-status", "sort-select"].forEach((id) =>
   document.getElementById(id).addEventListener("change", refreshListView)
@@ -410,6 +437,138 @@ function renderBetList(container, list) {
       if (bet) openSlideoverForEdit(bet);
     });
   });
+}
+
+// ============================================================
+// CALENDAR VIEW
+// ============================================================
+function calendarSourceBets() {
+  // respects the same search/league/status filters as the list
+  const league = document.getElementById("filter-league").value;
+  const status = document.getElementById("filter-status").value;
+  const search = document.getElementById("search-input").value.trim().toLowerCase();
+  return bets.filter(
+    (b) =>
+      (!league || b.league === league) &&
+      (!status || b.status === status) &&
+      (!search ||
+        [b.homeTeam, b.awayTeam, b.league, b.notes].join(" ").toLowerCase().includes(search))
+  );
+}
+
+function renderCalendarView() {
+  renderCalendarSummary();
+  renderCalendar();
+  renderDayDetail();
+}
+
+function renderCalendarSummary() {
+  const y = calendarDate.getFullYear();
+  const m = calendarDate.getMonth();
+  const monthBets = calendarSourceBets().filter((b) => {
+    const bd = new Date(b.date + "T00:00:00");
+    return bd.getFullYear() === y && bd.getMonth() === m;
+  });
+  const profit = monthBets.reduce((s, b) => s + b.profit, 0);
+  const wins = monthBets.filter((b) => b.status === "won").length;
+  const winRate = monthBets.length ? (wins / monthBets.length) * 100 : 0;
+
+  document.getElementById("calendar-summary").innerHTML = `
+    <div class="summary-item">
+      <div class="label">Profit</div>
+      <div class="value ${profit >= 0 ? "pos" : "neg"}" style="color:${profit >= 0 ? "var(--win)" : "var(--loss)"}">${profit >= 0 ? "+" : ""}${fmt(profit)}</div>
+    </div>
+    <div class="summary-item">
+      <div class="label">Win rate</div>
+      <div class="value">${winRate.toFixed(1)}%</div>
+    </div>
+    <div class="summary-item">
+      <div class="label">Bets</div>
+      <div class="value">${monthBets.length}</div>
+    </div>
+  `;
+}
+
+function renderCalendar() {
+  const y = calendarDate.getFullYear();
+  const m = calendarDate.getMonth();
+  document.getElementById("cal-label").textContent = calendarDate.toLocaleDateString("en-GB", {
+    month: "long",
+    year: "numeric"
+  });
+
+  const source = calendarSourceBets();
+  const firstOfMonth = new Date(y, m, 1);
+  const startWeekday = (firstOfMonth.getDay() + 6) % 7; // Monday = 0
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+
+  const grid = document.getElementById("calendar-grid");
+  let html = "";
+  for (let i = 0; i < startWeekday; i++) html += `<div class="calendar-day empty"></div>`;
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const iso = `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+    const dayBets = source.filter((b) => b.date === iso);
+    let cls = "calendar-day";
+    let innerHtml = `<span class="cal-daynum">${d}</span>`;
+
+    if (dayBets.length) {
+      cls += " has-bets";
+      const dayProfit = dayBets.reduce((s, b) => s + b.profit, 0);
+      cls += dayProfit >= 0 ? " profit-day" : " loss-day";
+      if (iso === selectedCalendarDay) cls += " selected";
+      innerHtml += `
+        <span class="cal-profit ${dayProfit >= 0 ? "pos" : "neg"}">${dayProfit >= 0 ? "+" : ""}${fmt(dayProfit)}</span>
+        <span class="cal-count">${dayBets.length} bet${dayBets.length > 1 ? "s" : ""}</span>`;
+    }
+    html += `<button type="button" class="${cls}" data-date="${iso}">${innerHtml}</button>`;
+  }
+  grid.innerHTML = html;
+
+  grid.querySelectorAll(".calendar-day.has-bets").forEach((el) => {
+    el.addEventListener("click", () => {
+      selectedCalendarDay = el.dataset.date === selectedCalendarDay ? null : el.dataset.date;
+      renderCalendar();
+      renderDayDetail();
+    });
+  });
+}
+
+function renderDayDetail() {
+  const panel = document.getElementById("day-detail");
+  if (!selectedCalendarDay) {
+    panel.classList.add("hidden");
+    return;
+  }
+  const dayBets = calendarSourceBets().filter((b) => b.date === selectedCalendarDay);
+  if (dayBets.length === 0) {
+    panel.classList.add("hidden");
+    return;
+  }
+  panel.classList.remove("hidden");
+  const dateLabel = new Date(selectedCalendarDay + "T00:00:00").toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  });
+  panel.innerHTML =
+    `<h3>${dateLabel}</h3>` +
+    dayBets
+      .map(
+        (b) => `
+      <div class="day-detail-bet">
+        <div class="ddb-top">
+          <strong>${escapeHtml(b.homeTeam)} vs ${escapeHtml(b.awayTeam)}</strong>
+          <span class="status-pill ${b.status}">${b.status}</span>
+        </div>
+        <div class="ddb-meta">
+          <span>Stake<b>${fmt(b.stake)}</b></span>
+          <span>Odds<b>@ ${b.odds.toFixed(2)}</b></span>
+          <span>Profit<b style="color:${b.profit >= 0 ? "var(--win)" : "var(--loss)"}">${b.profit >= 0 ? "+" : ""}${fmt(b.profit)}</b></span>
+        </div>
+      </div>`
+      )
+      .join("");
 }
 
 function renderStatsBreakdowns() {
