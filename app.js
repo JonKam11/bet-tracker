@@ -65,6 +65,7 @@ document.querySelectorAll(".theme-opt").forEach((btn) => {
 
 // ---------------- state ----------------
 let bets = load();
+let editingId = null;
 
 function load() {
   try {
@@ -79,8 +80,13 @@ function save() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(bets));
 }
 
-function addBet(betData) {
-  bets.unshift({ id: crypto.randomUUID(), ...betData });
+function addOrUpdateBet(betData) {
+  if (editingId) {
+    const idx = bets.findIndex((b) => b.id === editingId);
+    if (idx > -1) bets[idx] = { ...bets[idx], ...betData };
+  } else {
+    bets.unshift({ id: crypto.randomUUID(), ...betData });
+  }
   sortBets();
   save();
   renderAll();
@@ -153,18 +159,42 @@ const overlay = document.getElementById("overlay");
 const slideover = document.getElementById("slideover");
 const betForm = document.getElementById("bet-form");
 
-function openSlideover() {
+function openSlideoverForAdd() {
+  editingId = null;
+  document.getElementById("slideover-title").textContent = "Log a bet";
+  document.getElementById("submit-bet-btn").textContent = "Save bet";
+  betForm.reset();
   document.getElementById("bf-date").valueAsDate = new Date();
   overlay.classList.add("show");
   slideover.classList.add("show");
 }
+
+function openSlideoverForEdit(b) {
+  editingId = b.id;
+  document.getElementById("slideover-title").textContent = "Edit bet";
+  document.getElementById("submit-bet-btn").textContent = "Update bet";
+  document.getElementById("bf-league").value = b.league;
+  document.getElementById("bf-home").value = b.homeTeam;
+  document.getElementById("bf-away").value = b.awayTeam;
+  document.getElementById("bf-type").value = b.type;
+  document.getElementById("bf-date").value = b.date;
+  document.getElementById("bf-odds").value = b.odds;
+  document.getElementById("bf-stake").value = b.stake;
+  document.getElementById("bf-status").value = b.status;
+  document.getElementById("bf-notes").value = b.notes || "";
+  updatePotentialReturn();
+  overlay.classList.add("show");
+  slideover.classList.add("show");
+}
+
 function closeSlideover() {
   overlay.classList.remove("show");
   slideover.classList.remove("show");
   betForm.reset();
+  editingId = null;
 }
 ["add-bet-btn", "add-bet-btn-2"].forEach((id) =>
-  document.getElementById(id).addEventListener("click", openSlideover)
+  document.getElementById(id).addEventListener("click", openSlideoverForAdd)
 );
 document.getElementById("close-slideover").addEventListener("click", closeSlideover);
 document.getElementById("cancel-bet").addEventListener("click", closeSlideover);
@@ -200,7 +230,7 @@ betForm.addEventListener("submit", (e) => {
     notes: document.getElementById("bf-notes").value.trim()
   };
 
-  addBet(betData);
+  addOrUpdateBet(betData);
   closeSlideover();
 });
 
@@ -211,24 +241,57 @@ function renderAll() {
   renderHero();
   renderStatCards();
   renderBetList(document.getElementById("recent-bets-list"), bets.slice(0, 6));
-  renderBetList(document.getElementById("all-bets-list"), filteredBets());
+  refreshListView();
   renderLeagueFilter();
   renderStatsBreakdowns();
 }
 
-function filteredBets() {
+function sortForDisplay(list, mode) {
+  const arr = [...list];
+  switch (mode) {
+    case "oldest":
+      arr.sort((a, b) => a.date.localeCompare(b.date));
+      break;
+    case "profit-high":
+      arr.sort((a, b) => b.profit - a.profit);
+      break;
+    case "profit-low":
+      arr.sort((a, b) => a.profit - b.profit);
+      break;
+    case "odds-high":
+      arr.sort((a, b) => b.odds - a.odds);
+      break;
+    case "stake-high":
+      arr.sort((a, b) => b.stake - a.stake);
+      break;
+    default:
+      arr.sort((a, b) => b.date.localeCompare(a.date)); // newest
+  }
+  return arr;
+}
+
+function filteredSortedBets() {
   const league = document.getElementById("filter-league").value;
   const status = document.getElementById("filter-status").value;
-  return bets.filter(
-    (b) => (!league || b.league === league) && (!status || b.status === status)
+  const search = document.getElementById("search-input").value.trim().toLowerCase();
+  const sortMode = document.getElementById("sort-select").value;
+  const list = bets.filter(
+    (b) =>
+      (!league || b.league === league) &&
+      (!status || b.status === status) &&
+      (!search ||
+        [b.homeTeam, b.awayTeam, b.league, b.notes].join(" ").toLowerCase().includes(search))
   );
+  return sortForDisplay(list, sortMode);
 }
-document.getElementById("filter-league").addEventListener("change", () =>
-  renderBetList(document.getElementById("all-bets-list"), filteredBets())
+
+function refreshListView() {
+  renderBetList(document.getElementById("all-bets-list"), filteredSortedBets());
+}
+["filter-league", "filter-status", "sort-select"].forEach((id) =>
+  document.getElementById(id).addEventListener("change", refreshListView)
 );
-document.getElementById("filter-status").addEventListener("change", () =>
-  renderBetList(document.getElementById("all-bets-list"), filteredBets())
-);
+document.getElementById("search-input").addEventListener("input", refreshListView);
 
 function renderLeagueFilter() {
   const sel = document.getElementById("filter-league");
@@ -330,13 +393,22 @@ function renderBetList(container, list) {
         <div class="stake">${fmt(b.stake)}</div>
         <div><span class="status-pill ${b.status}">${b.status}</span></div>
         <div class="profit ${profitClass}">${profitText}</div>
-        <button class="row-del" data-id="${b.id}" title="Delete">✕</button>
+        <div class="row-actions">
+          <button class="row-edit" data-id="${b.id}" title="Edit">✏️</button>
+          <button class="row-del" data-id="${b.id}" title="Delete">✕</button>
+        </div>
       </div>`;
     })
     .join("");
 
   container.querySelectorAll(".row-del").forEach((btn) => {
     btn.addEventListener("click", () => removeBet(btn.dataset.id));
+  });
+  container.querySelectorAll(".row-edit").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const bet = bets.find((b) => b.id === btn.dataset.id);
+      if (bet) openSlideoverForEdit(bet);
+    });
   });
 }
 
