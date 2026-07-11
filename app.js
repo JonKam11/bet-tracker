@@ -80,7 +80,16 @@ function save() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(bets));
 }
 
+function showToast(message) {
+  const toast = document.getElementById("toast");
+  toast.textContent = message;
+  toast.classList.add("show");
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => toast.classList.remove("show"), 2200);
+}
+
 function addOrUpdateBet(betData) {
+  const wasEditing = !!editingId;
   if (editingId) {
     const idx = bets.findIndex((b) => b.id === editingId);
     if (idx > -1) bets[idx] = { ...bets[idx], ...betData };
@@ -90,12 +99,14 @@ function addOrUpdateBet(betData) {
   sortBets();
   save();
   renderAll();
+  showToast(wasEditing ? "✓ Bet updated" : "✓ Bet saved");
 }
 
 function removeBet(id) {
   bets = bets.filter((b) => b.id !== id);
   save();
   renderAll();
+  showToast("Bet deleted");
 }
 
 function sortBets() {
@@ -264,6 +275,7 @@ betForm.addEventListener("submit", (e) => {
 function renderAll() {
   renderHero();
   renderStatCards();
+  renderMonthlyLineChart();
   renderBetList(document.getElementById("recent-bets-list"), bets.slice(0, 6));
   refreshListView();
   renderLeagueFilter();
@@ -571,9 +583,95 @@ function renderDayDetail() {
       .join("");
 }
 
+function renderLeagueStats() {
+  const container = document.getElementById("breakdown-league");
+  const leagues = [...new Set(bets.map((b) => b.league))];
+  if (leagues.length === 0) {
+    container.innerHTML = `<div class="bar-row"><div class="bar-top"><span>No data yet</span></div></div>`;
+    return;
+  }
+  container.innerHTML =
+    `<div class="league-mini-grid">` +
+    leagues
+      .map((lg) => {
+        const lb = bets.filter((b) => b.league === lg);
+        const profit = lb.reduce((s, b) => s + b.profit, 0);
+        const staked = lb.reduce((s, b) => s + b.stake, 0);
+        const roi = staked ? (profit / staked) * 100 : 0;
+        const wins = lb.filter((b) => b.status === "won").length;
+        const winRate = lb.length ? (wins / lb.length) * 100 : 0;
+        return `
+        <div class="league-mini-card">
+          <div class="lmc-name">${escapeHtml(lg)}</div>
+          <div class="lmc-profit ${profit >= 0 ? "pos" : "neg"}">${profit >= 0 ? "+" : ""}${fmt(profit)}</div>
+          <div class="lmc-row"><span>ROI</span><b>${roi >= 0 ? "+" : ""}${roi.toFixed(1)}%</b></div>
+          <div class="lmc-row"><span>Win rate</span><b>${winRate.toFixed(1)}%</b></div>
+          <div class="lmc-row"><span>Bets</span><b>${lb.length}</b></div>
+        </div>`;
+      })
+      .join("") +
+    `</div>`;
+}
+
+function renderMonthlyLineChart() {
+  const path = document.getElementById("monthly-line-path");
+  const pointsG = document.getElementById("monthly-line-points");
+  const labelsEl = document.getElementById("monthly-line-labels");
+
+  const now = new Date();
+  const year = now.getFullYear();
+  const monthCount = now.getMonth() + 1; // Jan .. current month
+  const months = [];
+  for (let m = 0; m < monthCount; m++) {
+    months.push({ m, label: new Date(year, m, 1).toLocaleDateString("en-GB", { month: "short" }) });
+  }
+  const profits = months.map(({ m }) =>
+    bets
+      .filter((b) => {
+        const bd = new Date(b.date + "T00:00:00");
+        return bd.getFullYear() === year && bd.getMonth() === m;
+      })
+      .reduce((s, b) => s + b.profit, 0)
+  );
+
+  if (months.length === 0) {
+    path.setAttribute("d", "");
+    pointsG.innerHTML = "";
+    labelsEl.innerHTML = "";
+    return;
+  }
+
+  const w = 600, h = 200, padX = 20, padY = 24;
+  const min = Math.min(0, ...profits);
+  const max = Math.max(0, ...profits);
+  const range = max - min || 1;
+  const n = months.length;
+  const stepX = n > 1 ? (w - padX * 2) / (n - 1) : 0;
+
+  const coords = profits.map((v, i) => {
+    const x = n > 1 ? padX + i * stepX : w / 2;
+    const y = h - padY - ((v - min) / range) * (h - padY * 2);
+    return [x, y];
+  });
+
+  const d = coords.map((c, i) => (i === 0 ? "M" : "L") + c[0].toFixed(1) + " " + c[1].toFixed(1)).join(" ");
+  path.setAttribute("d", d);
+  path.style.animation = "none";
+  void path.offsetWidth;
+  path.style.animation = "";
+
+  pointsG.innerHTML = coords
+    .map(([x, y], i) => {
+      const v = profits[i];
+      return `<circle class="monthly-point" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4" style="animation-delay:${(i * 0.08 + 0.7).toFixed(2)}s"><title>${months[i].label}: ${v >= 0 ? "+" : ""}${fmt(v)}</title></circle>`;
+    })
+    .join("");
+
+  labelsEl.innerHTML = months.map((mo) => `<span>${mo.label}</span>`).join("");
+}
+
 function renderStatsBreakdowns() {
-  const byLeague = groupSum(bets, "league");
-  renderBars(document.getElementById("breakdown-league"), byLeague);
+  renderLeagueStats();
 
   const byType = groupSum(bets, "type");
   renderBars(document.getElementById("breakdown-type"), byType);
