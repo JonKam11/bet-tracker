@@ -1377,3 +1377,57 @@ main {
   .snapshot-grid { grid-template-columns: 1fr 1fr; gap: 16px; }
   .ss-value { font-size: 20px; }
 }
+
+/* ============================================
+   LAST 5 RESULTS + ALL TIME CARD
+   ============================================ */
+.snapshot-form {
+  flex-wrap: wrap;
+  row-gap: 12px;
+}
+
+.last5-row {
+  display: flex;
+  gap: 6px;
+}
+
+.last5-badge {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #06131c;
+}
+
+.last5-badge.win { background: var(--win); }
+.last5-badge.loss { background: var(--loss); }
+
+.at-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  font-size: 13.5px;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.at-row:last-child { border-bottom: none; }
+
+.at-row b {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.at-row b.win-color { color: var(--win); }
+.at-row b.loss-color { color: var(--loss); }
+
+@media (max-width: 760px) {
+  .snapshot-form { justify-content: flex-start; gap: 16px; }
+}
