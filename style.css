@@ -1274,3 +1274,106 @@ main {
   .line-chart-wrap svg { height: 160px; }
   .league-mini-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
 }
+
+/* ============================================
+   PERFORMANCE SNAPSHOT CARD
+   ============================================ */
+.snapshot-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 22px 24px;
+  animation: rise 0.4s var(--ease);
+}
+
+.snapshot-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.snapshot-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 13.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.snapshot-badge {
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.snapshot-badge.live { background: var(--teal-dim); color: var(--teal); }
+.snapshot-badge.hot { background: var(--win-dim); color: var(--win); }
+.snapshot-badge.cold { background: var(--loss-dim); color: var(--loss); }
+
+.snapshot-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px 24px;
+}
+
+.ss-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.ss-value {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.ss-caption {
+  font-size: 12px;
+  color: var(--text-faint);
+  margin-top: 4px;
+}
+
+.snapshot-divider {
+  border-top: 1px solid var(--border);
+  margin: 20px 0 16px;
+}
+
+.snapshot-form {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sf-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sf-icon {
+  font-size: 20px;
+}
+
+.sf-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.sf-caption {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+@media (max-width: 760px) {
+  .snapshot-grid { grid-template-columns: 1fr 1fr; gap: 16px; }
+  .ss-value { font-size: 20px; }
+}
