@@ -426,6 +426,7 @@ function renderBetList(container, list) {
         <div class="match">
           <strong>${escapeHtml(b.homeTeam)} vs ${escapeHtml(b.awayTeam)}</strong>
           <div class="league-tag">${escapeHtml(b.league)} · ${b.type === "parlay" ? "Parlay" : "Single"}</div>
+          ${b.notes ? `<div class="bet-notes">📝 ${escapeHtml(b.notes)}</div>` : ""}
         </div>
         <div class="odds">@ ${b.odds.toFixed(2)}</div>
         <div class="stake">${fmt(b.stake)}</div>
@@ -572,6 +573,7 @@ function renderDayDetail() {
           <strong>${escapeHtml(b.homeTeam)} vs ${escapeHtml(b.awayTeam)}</strong>
           <span class="status-pill ${b.status}">${b.status}</span>
         </div>
+        ${b.notes ? `<div class="bet-notes" style="margin-bottom:8px;">📝 ${escapeHtml(b.notes)}</div>` : ""}
         <div class="ddb-meta">
           <span>Stake<b>${fmt(b.stake)}</b></span>
           <span>Odds<b>@ ${b.odds.toFixed(2)}</b></span>
@@ -614,18 +616,6 @@ function renderLeagueStats() {
 
 function renderStatsBreakdowns() {
   renderLeagueStats();
-
-  const byType = groupSum(bets, "type");
-  renderBars(document.getElementById("breakdown-type"), byType);
-
-  const settled = bets.filter((b) => b.status === "won" || b.status === "lost");
-  const wins = settled.filter((b) => b.status === "won").length;
-  const losses = settled.filter((b) => b.status === "lost").length;
-  document.getElementById("breakdown-record").innerHTML = `
-    <div class="bar-row"><div class="bar-top"><span>Won</span><span class="amt">${wins}</span></div></div>
-    <div class="bar-row"><div class="bar-top"><span>Lost</span><span class="amt">${losses}</span></div></div>
-  `;
-
   renderPerformanceSnapshot();
 }
 
