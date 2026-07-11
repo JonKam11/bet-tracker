@@ -1138,3 +1138,139 @@ main {
   .calendar-summary { flex-wrap: wrap; gap: 16px; }
   .day-detail-bet .ddb-meta { gap: 14px; }
 }
+
+/* ============================================
+   TOAST NOTIFICATION
+   ============================================ */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(16px);
+  background: var(--surface-hi);
+  border: 1px solid var(--border-hi);
+  color: var(--text);
+  padding: 12px 22px;
+  border-radius: 999px;
+  font-size: 13.5px;
+  font-weight: 600;
+  box-shadow: var(--shadow);
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s var(--ease);
+  z-index: 100;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ============================================
+   MONTHLY PROFIT LINE CHART
+   ============================================ */
+.chart-card {
+  padding: 22px 24px 16px;
+  margin-bottom: 24px;
+}
+
+.line-chart-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.line-chart-wrap svg {
+  width: 100%;
+  height: 200px;
+  overflow: visible;
+}
+
+.monthly-line-path {
+  fill: none;
+  stroke: url(#monthlyLineGradient);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 2000;
+  stroke-dashoffset: 2000;
+  animation: draw 1.4s var(--ease) forwards;
+}
+
+.monthly-point {
+  fill: var(--surface);
+  stroke: var(--teal);
+  stroke-width: 2;
+  opacity: 0;
+  animation: fillin 0.4s var(--ease) forwards;
+}
+
+.line-chart-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding: 0 2px;
+}
+
+.line-chart-labels span {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  text-align: center;
+  flex: 1;
+}
+
+/* ============================================
+   LEAGUE STATS CARDS
+   ============================================ */
+.league-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.league-mini-card {
+  background: var(--surface-hi);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  transition: border-color 0.2s var(--ease), transform 0.2s var(--ease);
+}
+
+.league-mini-card:hover {
+  border-color: var(--border-hi);
+  transform: translateY(-2px);
+}
+
+.lmc-name {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.lmc-profit {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.lmc-profit.pos { color: var(--win); }
+.lmc-profit.neg { color: var(--loss); }
+
+.lmc-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 3px 0;
+}
+
+.lmc-row b {
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+@media (max-width: 760px) {
+  .line-chart-wrap svg { height: 160px; }
+  .league-mini-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+}
