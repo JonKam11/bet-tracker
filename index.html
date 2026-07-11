@@ -98,25 +98,6 @@
       </div>
 
       <div class="section-head">
-        <h2>Monthly profit</h2>
-      </div>
-      <div class="card chart-card">
-        <div class="line-chart-wrap">
-          <svg viewBox="0 0 600 200" preserveAspectRatio="none" id="monthly-line-svg">
-            <defs>
-              <linearGradient id="monthlyLineGradient" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stop-color="#4c8dff" />
-                <stop offset="100%" stop-color="#2dd4bf" />
-              </linearGradient>
-            </defs>
-            <path class="monthly-line-path" id="monthly-line-path" />
-            <g id="monthly-line-points"></g>
-          </svg>
-        </div>
-        <div class="line-chart-labels" id="monthly-line-labels"></div>
-      </div>
-
-      <div class="section-head">
         <h2>Recent bets</h2>
       </div>
       <div class="card" id="recent-bets-list"></div>
@@ -199,15 +180,12 @@
           <h3>Record</h3>
           <div id="breakdown-record"></div>
         </div>
-        <div class="breakdown-card">
-          <h3>Streak</h3>
-          <div id="breakdown-streak"></div>
-        </div>
-        <div class="breakdown-card" style="grid-column: 1 / -1;">
-          <h3>All time stats</h3>
-          <div id="breakdown-alltime"></div>
-        </div>
       </div>
+
+      <div class="section-head" style="margin-top:22px;">
+        <h2 style="font-size:15px;">Performance snapshot</h2>
+      </div>
+      <div class="snapshot-card" id="snapshot-card"></div>
     </section>
   </main>
 
