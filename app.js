@@ -94,7 +94,7 @@ function addOrUpdateBet(betData) {
     const idx = bets.findIndex((b) => b.id === editingId);
     if (idx > -1) bets[idx] = { ...bets[idx], ...betData };
   } else {
-    bets.unshift({ id: crypto.randomUUID(), ...betData });
+    bets.unshift({ id: crypto.randomUUID(), createdAt: Date.now(), ...betData });
   }
   sortBets();
   save();
@@ -641,6 +641,7 @@ function renderPerformanceSnapshot() {
         <div class="big">No bets yet</div>
         <div class="small">Log a few bets and your snapshot will appear here.</div>
       </div>`;
+    renderAllTimeCard();
     return;
   }
 
@@ -659,8 +660,13 @@ function renderPerformanceSnapshot() {
   // biggest single win
   const biggestWin = wins.length ? wins.reduce((a, b) => (b.profit > a.profit ? b : a)) : null;
 
-  // current streak
-  const chrono = [...bets].sort((a, b) => a.date.localeCompare(b.date));
+  // current streak — tiebreak same-date bets by when they were actually added,
+  // so a same-day loss/win added later correctly extends/breaks the streak
+  const chrono = [...bets].sort((a, b) => {
+    const dc = a.date.localeCompare(b.date);
+    if (dc !== 0) return dc;
+    return (a.createdAt || 0) - (b.createdAt || 0);
+  });
   let streak = 0, streakType = null;
   for (let i = chrono.length - 1; i >= 0; i--) {
     const s = chrono[i].status;
@@ -675,6 +681,12 @@ function renderPerformanceSnapshot() {
   const formCaption = streak
     ? `${streak} ${isHot ? "win" : "loss"}${streak > 1 ? (isHot ? "s" : "es") : ""} in a row`
     : "No settled bets yet";
+
+  // last 5 results, oldest to newest (left to right)
+  const last5 = chrono.slice(-5);
+  const last5Html = last5
+    .map((b) => `<span class="last5-badge ${b.status === "won" ? "win" : "loss"}">${b.status === "won" ? "W" : "L"}</span>`)
+    .join("");
 
   container.innerHTML = `
     <div class="snapshot-head">
@@ -712,8 +724,30 @@ function renderPerformanceSnapshot() {
           <div class="sf-caption">${formCaption}</div>
         </div>
       </div>
+      <div class="last5-row">${last5Html}</div>
       <span class="snapshot-badge ${formBadgeClass}">${formLabel}</span>
     </div>
+  `;
+
+  renderAllTimeCard();
+}
+
+function renderAllTimeCard() {
+  const container = document.getElementById("alltime-card");
+  const wins = bets.filter((b) => b.status === "won").length;
+  const losses = bets.filter((b) => b.status === "lost").length;
+  const profit = bets.reduce((s, b) => s + b.profit, 0);
+
+  container.innerHTML = `
+    <div class="snapshot-head">
+      <div class="snapshot-title">📅 All time</div>
+      <span class="snapshot-badge live">Live</span>
+    </div>
+    <div class="snapshot-divider"></div>
+    <div class="at-row"><span>Bets placed</span><b>${bets.length}</b></div>
+    <div class="at-row"><span>Wins</span><b class="win-color">${wins}</b></div>
+    <div class="at-row"><span>Losses</span><b class="loss-color">${losses}</b></div>
+    <div class="at-row"><span>Profit</span><b class="${profit >= 0 ? "win-color" : "loss-color"}">${profit >= 0 ? "+" : ""}${fmt(profit)}</b></div>
   `;
 }
 
