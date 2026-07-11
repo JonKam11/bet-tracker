@@ -275,7 +275,6 @@ betForm.addEventListener("submit", (e) => {
 function renderAll() {
   renderHero();
   renderStatCards();
-  renderMonthlyLineChart();
   renderBetList(document.getElementById("recent-bets-list"), bets.slice(0, 6));
   refreshListView();
   renderLeagueFilter();
@@ -613,63 +612,6 @@ function renderLeagueStats() {
     `</div>`;
 }
 
-function renderMonthlyLineChart() {
-  const path = document.getElementById("monthly-line-path");
-  const pointsG = document.getElementById("monthly-line-points");
-  const labelsEl = document.getElementById("monthly-line-labels");
-
-  const now = new Date();
-  const year = now.getFullYear();
-  const monthCount = now.getMonth() + 1; // Jan .. current month
-  const months = [];
-  for (let m = 0; m < monthCount; m++) {
-    months.push({ m, label: new Date(year, m, 1).toLocaleDateString("en-GB", { month: "short" }) });
-  }
-  const profits = months.map(({ m }) =>
-    bets
-      .filter((b) => {
-        const bd = new Date(b.date + "T00:00:00");
-        return bd.getFullYear() === year && bd.getMonth() === m;
-      })
-      .reduce((s, b) => s + b.profit, 0)
-  );
-
-  if (months.length === 0) {
-    path.setAttribute("d", "");
-    pointsG.innerHTML = "";
-    labelsEl.innerHTML = "";
-    return;
-  }
-
-  const w = 600, h = 200, padX = 20, padY = 24;
-  const min = Math.min(0, ...profits);
-  const max = Math.max(0, ...profits);
-  const range = max - min || 1;
-  const n = months.length;
-  const stepX = n > 1 ? (w - padX * 2) / (n - 1) : 0;
-
-  const coords = profits.map((v, i) => {
-    const x = n > 1 ? padX + i * stepX : w / 2;
-    const y = h - padY - ((v - min) / range) * (h - padY * 2);
-    return [x, y];
-  });
-
-  const d = coords.map((c, i) => (i === 0 ? "M" : "L") + c[0].toFixed(1) + " " + c[1].toFixed(1)).join(" ");
-  path.setAttribute("d", d);
-  path.style.animation = "none";
-  void path.offsetWidth;
-  path.style.animation = "";
-
-  pointsG.innerHTML = coords
-    .map(([x, y], i) => {
-      const v = profits[i];
-      return `<circle class="monthly-point" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4" style="animation-delay:${(i * 0.08 + 0.7).toFixed(2)}s"><title>${months[i].label}: ${v >= 0 ? "+" : ""}${fmt(v)}</title></circle>`;
-    })
-    .join("");
-
-  labelsEl.innerHTML = months.map((mo) => `<span>${mo.label}</span>`).join("");
-}
-
 function renderStatsBreakdowns() {
   renderLeagueStats();
 
@@ -684,7 +626,41 @@ function renderStatsBreakdowns() {
     <div class="bar-row"><div class="bar-top"><span>Lost</span><span class="amt">${losses}</span></div></div>
   `;
 
-  const chrono = [...settled].sort((a, b) => a.date.localeCompare(b.date));
+  renderPerformanceSnapshot();
+}
+
+function renderPerformanceSnapshot() {
+  const container = document.getElementById("snapshot-card");
+
+  if (bets.length === 0) {
+    container.innerHTML = `
+      <div class="snapshot-head">
+        <div class="snapshot-title">⏱️ Performance snapshot</div>
+      </div>
+      <div class="empty-state" style="padding:30px 10px;">
+        <div class="big">No bets yet</div>
+        <div class="small">Log a few bets and your snapshot will appear here.</div>
+      </div>`;
+    return;
+  }
+
+  const wins = bets.filter((b) => b.status === "won");
+
+  // avg odds per winning bet
+  const avgOdds = wins.length ? wins.reduce((s, b) => s + b.odds, 0) / wins.length : null;
+
+  // avg stake across all bets
+  const avgStake = bets.reduce((s, b) => s + b.stake, 0) / bets.length;
+
+  // best league by profit
+  const leagueProfit = groupSum(bets, "league");
+  const bestLeagueEntry = Object.entries(leagueProfit).sort((a, b) => b[1] - a[1])[0];
+
+  // biggest single win
+  const biggestWin = wins.length ? wins.reduce((a, b) => (b.profit > a.profit ? b : a)) : null;
+
+  // current streak
+  const chrono = [...bets].sort((a, b) => a.date.localeCompare(b.date));
   let streak = 0, streakType = null;
   for (let i = chrono.length - 1; i >= 0; i--) {
     const s = chrono[i].status;
@@ -692,41 +668,51 @@ function renderStatsBreakdowns() {
     else if (s === streakType) streak++;
     else break;
   }
-  document.getElementById("breakdown-streak").innerHTML = streak
-    ? `<div class="bar-row"><div class="bar-top"><span>Current streak</span><span class="amt">${streak} ${streakType === "won" ? (streak > 1 ? "wins" : "win") : (streak > 1 ? "losses" : "loss")}</span></div></div>`
-    : `<div class="bar-row"><div class="bar-top"><span>No settled bets yet</span></div></div>`;
-
-  renderAllTimeStats();
-}
-
-function renderAllTimeStats() {
-  const container = document.getElementById("breakdown-alltime");
-  const wins = bets.filter((b) => b.status === "won");
-  if (wins.length === 0) {
-    container.innerHTML = `<div class="bar-row"><div class="bar-top"><span>No wins logged yet</span></div></div>`;
-    return;
-  }
-  const biggestByMoney = wins.reduce((a, b) => (b.profit > a.profit ? b : a));
-  const biggestByOdds = wins.reduce((a, b) => (b.odds > a.odds ? b : a));
+  const isHot = streakType === "won";
+  const formIcon = isHot ? "🔥" : "❄️";
+  const formLabel = isHot ? "Hot" : "Cold";
+  const formBadgeClass = isHot ? "hot" : "cold";
+  const formCaption = streak
+    ? `${streak} ${isHot ? "win" : "loss"}${streak > 1 ? (isHot ? "s" : "es") : ""} in a row`
+    : "No settled bets yet";
 
   container.innerHTML = `
-    <div class="bar-row">
-      <div class="bar-top">
-        <span>Biggest win (money)</span>
-        <span class="amt">+${fmt(biggestByMoney.profit)}</span>
+    <div class="snapshot-head">
+      <div class="snapshot-title">⏱️ Performance snapshot</div>
+      <span class="snapshot-badge live">Live</span>
+    </div>
+    <div class="snapshot-grid">
+      <div class="snapshot-stat">
+        <div class="ss-label">Avg odds</div>
+        <div class="ss-value">${avgOdds !== null ? avgOdds.toFixed(2) : "—"}</div>
+        <div class="ss-caption">Per winning bet</div>
       </div>
-      <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">
-        ${escapeHtml(biggestByMoney.homeTeam)} vs ${escapeHtml(biggestByMoney.awayTeam)} · @ ${biggestByMoney.odds.toFixed(2)}
+      <div class="snapshot-stat">
+        <div class="ss-label">Avg stake</div>
+        <div class="ss-value">${fmt(avgStake)}</div>
+        <div class="ss-caption">Across all bets</div>
+      </div>
+      <div class="snapshot-stat">
+        <div class="ss-label">Best league</div>
+        <div class="ss-value">${bestLeagueEntry ? escapeHtml(bestLeagueEntry[0]) : "—"}</div>
+        <div class="ss-caption">${bestLeagueEntry ? (bestLeagueEntry[1] >= 0 ? "+" : "") + fmt(bestLeagueEntry[1]) + " profit" : "No data yet"}</div>
+      </div>
+      <div class="snapshot-stat">
+        <div class="ss-label">Biggest win</div>
+        <div class="ss-value">${biggestWin ? "+" + fmt(biggestWin.profit) : "—"}</div>
+        <div class="ss-caption">Single bet</div>
       </div>
     </div>
-    <div class="bar-row">
-      <div class="bar-top">
-        <span>Biggest win (odds)</span>
-        <span class="amt">@ ${biggestByOdds.odds.toFixed(2)}</span>
+    <div class="snapshot-divider"></div>
+    <div class="snapshot-form">
+      <div class="sf-left">
+        <span class="sf-icon">${formIcon}</span>
+        <div>
+          <div class="sf-title">Current form</div>
+          <div class="sf-caption">${formCaption}</div>
+        </div>
       </div>
-      <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">
-        ${escapeHtml(biggestByOdds.homeTeam)} vs ${escapeHtml(biggestByOdds.awayTeam)} · +${fmt(biggestByOdds.profit)}
-      </div>
+      <span class="snapshot-badge ${formBadgeClass}">${formLabel}</span>
     </div>
   `;
 }
