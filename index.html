@@ -98,6 +98,25 @@
       </div>
 
       <div class="section-head">
+        <h2>Monthly profit</h2>
+      </div>
+      <div class="card chart-card">
+        <div class="line-chart-wrap">
+          <svg viewBox="0 0 600 200" preserveAspectRatio="none" id="monthly-line-svg">
+            <defs>
+              <linearGradient id="monthlyLineGradient" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#4c8dff" />
+                <stop offset="100%" stop-color="#2dd4bf" />
+              </linearGradient>
+            </defs>
+            <path class="monthly-line-path" id="monthly-line-path" />
+            <g id="monthly-line-points"></g>
+          </svg>
+        </div>
+        <div class="line-chart-labels" id="monthly-line-labels"></div>
+      </div>
+
+      <div class="section-head">
         <h2>Recent bets</h2>
       </div>
       <div class="card" id="recent-bets-list"></div>
@@ -165,11 +184,13 @@
       <div class="section-head">
         <h2>In-depth stats</h2>
       </div>
+
+      <div class="section-head">
+        <h2 style="font-size:15px;">By league</h2>
+      </div>
+      <div class="card" style="padding:20px 22px; margin-bottom:20px;" id="breakdown-league"></div>
+
       <div class="stats-grid">
-        <div class="breakdown-card">
-          <h3>Profit by league</h3>
-          <div id="breakdown-league"></div>
-        </div>
         <div class="breakdown-card">
           <h3>By bet type</h3>
           <div id="breakdown-type"></div>
@@ -197,6 +218,7 @@
   </nav>
 
   <button class="btn-add" id="add-bet-btn" style="position:fixed; bottom:80px; right:20px; z-index:15; box-shadow: var(--shadow);">+ Add bet</button>
+  <div class="toast" id="toast"></div>
 </div>
 
 <!-- ============== ADD BET SLIDE-OVER ============== -->
